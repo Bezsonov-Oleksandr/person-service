@@ -52,7 +52,7 @@ public class PersonServiceImpl implements PersonService {
     public PersonDto updatePersonName(Integer id, String name) {
         Person person = personRepository.findById(id).orElseThrow(NotFoundException::new);
         person.setName(name);
-        personRepository.save(person);
+//        personRepository.save(person);
         return modelMapper.map(person, PersonDto.class);
     }
 
@@ -61,35 +61,38 @@ public class PersonServiceImpl implements PersonService {
     public PersonDto updatePersonAddress(Integer id, AddressDto addressDto) {
         Person person = personRepository.findById(id).orElseThrow(NotFoundException::new);
         person.setAddress(modelMapper.map(addressDto, Address.class));
-        personRepository.save(person);
+//        personRepository.save(person);
         return modelMapper.map(person, PersonDto.class);
     }
 
+    @Transactional(readOnly = true)
     @Override
     public PersonDto[] findPersonsByName(String name) {
-        return personRepository.findByNameIgnoreCase(name).stream()
+        return personRepository.findByNameIgnoreCase(name)
                 .map((person -> modelMapper.map(person, PersonDto.class)))
                 .toArray(PersonDto[]::new);
     }
 
+    @Transactional(readOnly = true)
     @Override
     public PersonDto[] findPersonsByCity(String city) {
-        return personRepository.findByAddressCityIgnoreCase(city).stream()
+        return personRepository.findByAddressCityIgnoreCase(city)
                 .map((person -> modelMapper.map(person, PersonDto.class)))
                 .toArray(PersonDto[]::new);
     }
 
+    @Transactional(readOnly = true)
     @Override
     public PersonDto[] findPersonsBetweenAge(Integer minAge, Integer maxAge) {
         LocalDate minDate = LocalDate.now().minusYears(maxAge+1).plusDays(1);
         LocalDate maxDate = LocalDate.now().minusYears(minAge).plusDays(1);
-        return personRepository.findByBirthDateBetween(minDate, maxDate).stream()
+        return personRepository.findByBirthDateBetween(minDate, maxDate)
                 .map((person -> modelMapper.map(person, PersonDto.class)))
                 .toArray(PersonDto[]::new);
     }
 
     @Override
     public Iterable<CityPopulationDto> getCitiesPopulation() {
-        return null;
+        return personRepository.getCitiesPopulation();
     }
 }
