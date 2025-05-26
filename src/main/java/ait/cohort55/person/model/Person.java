@@ -11,8 +11,8 @@ import java.time.LocalDate;
 @Getter
 @EqualsAndHashCode(of = "id")
 @Entity
-@Table(name = "person")
-@Inheritance(strategy = InheritanceType.SINGLE_TABLE)
+@Table(name = "persons")
+@Inheritance(strategy = InheritanceType.JOINED)
 public class Person implements Serializable {
     @Id
     private int id;
