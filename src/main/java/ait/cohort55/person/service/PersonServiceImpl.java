@@ -39,6 +39,7 @@ public class PersonServiceImpl implements PersonService {
         return modelMapper.map(person, PersonDto.class);
     }
 
+    @Transactional
     @Override
     public PersonDto deletePersonById(Integer id) {
         Person person = personRepository.findById(id).orElseThrow(NotFoundException::new);
@@ -46,6 +47,7 @@ public class PersonServiceImpl implements PersonService {
         return modelMapper.map(person, PersonDto.class);
     }
 
+    @Transactional
     @Override
     public PersonDto updatePersonName(Integer id, String name) {
         Person person = personRepository.findById(id).orElseThrow(NotFoundException::new);
@@ -54,6 +56,7 @@ public class PersonServiceImpl implements PersonService {
         return modelMapper.map(person, PersonDto.class);
     }
 
+    @Transactional
     @Override
     public PersonDto updatePersonAddress(Integer id, AddressDto addressDto) {
         Person person = personRepository.findById(id).orElseThrow(NotFoundException::new);
@@ -71,7 +74,7 @@ public class PersonServiceImpl implements PersonService {
 
     @Override
     public PersonDto[] findPersonsByCity(String city) {
-        return personRepository.findByAddressCity(city).stream()
+        return personRepository.findByAddressCityIgnoreCase(city).stream()
                 .map((person -> modelMapper.map(person, PersonDto.class)))
                 .toArray(PersonDto[]::new);
     }
