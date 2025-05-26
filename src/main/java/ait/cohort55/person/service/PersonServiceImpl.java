@@ -15,7 +15,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -30,25 +29,14 @@ public class PersonServiceImpl implements PersonService, CommandLineRunner {
     public void addPerson(PersonDto personDto) {
         if (personRepository.existsById(personDto.getId())) {
             throw new ConflictException("Person with id " + personDto.getId() + " already exists");
-        } else if (personDto instanceof ChildDto) {
-            personRepository.save(modelMapper.map(personDto, Child.class));
-        } else if (personDto instanceof EmployeeDto) {
-            personRepository.save(modelMapper.map(personDto, Employee.class));
-        } else {
-            personRepository.save(modelMapper.map(personDto, Person.class));
         }
+        personRepository.save(mapper.mapToModel(personDto));
     }
 
     @Override
     public PersonDto getPersonById(Integer id) {
         Person person = personRepository.findById(id).orElseThrow(NotFoundException::new);
-        if (person instanceof Child) {
-            return modelMapper.map(person, ChildDto.class);
-        }
-        if (person instanceof Employee) {
-            return modelMapper.map(person, EmployeeDto.class);
-        }
-        return modelMapper.map(person, PersonDto.class);
+        return mapper.mapToDto(person);
     }
 
     @Transactional
@@ -56,13 +44,7 @@ public class PersonServiceImpl implements PersonService, CommandLineRunner {
     public PersonDto deletePersonById(Integer id) {
         Person person = personRepository.findById(id).orElseThrow(NotFoundException::new);
         personRepository.delete(person);
-        if (person instanceof Child) {
-            return modelMapper.map(person, ChildDto.class);
-        }
-        if (person instanceof Employee) {
-            return modelMapper.map(person, EmployeeDto.class);
-        }
-        return modelMapper.map(person, PersonDto.class);
+        return mapper.mapToDto(person);
     }
 
     @Transactional
@@ -70,13 +52,7 @@ public class PersonServiceImpl implements PersonService, CommandLineRunner {
     public PersonDto updatePersonName(Integer id, String name) {
         Person person = personRepository.findById(id).orElseThrow(NotFoundException::new);
         person.setName(name);
-        if (person instanceof Child) {
-            return modelMapper.map(person, ChildDto.class);
-        }
-        if (person instanceof Employee) {
-            return modelMapper.map(person, EmployeeDto.class);
-        }
-        return modelMapper.map(person, PersonDto.class);
+        return mapper.mapToDto(person);
     }
 
     @Transactional
@@ -84,28 +60,14 @@ public class PersonServiceImpl implements PersonService, CommandLineRunner {
     public PersonDto updatePersonAddress(Integer id, AddressDto addressDto) {
         Person person = personRepository.findById(id).orElseThrow(NotFoundException::new);
         person.setAddress(modelMapper.map(addressDto, Address.class));
-        if (person instanceof Child) {
-            return modelMapper.map(person, ChildDto.class);
-        }
-        if (person instanceof Employee) {
-            return modelMapper.map(person, EmployeeDto.class);
-        }
-        return modelMapper.map(person, PersonDto.class);
+        return mapper.mapToDto(person);
     }
 
     @Transactional(readOnly = true)
     @Override
     public PersonDto[] findPersonsByName(String name) {
         return personRepository.findByNameIgnoreCase(name)
-                .map((person -> {
-                    if (person instanceof Child) {
-                        return modelMapper.map(person, ChildDto.class);
-                    }
-                    if (person instanceof Employee) {
-                        return modelMapper.map(person, EmployeeDto.class);
-                    }
-                    return modelMapper.map(person, PersonDto.class);
-                }))
+                .map(mapper::mapToDto)
                 .toArray(PersonDto[]::new);
     }
 
@@ -113,15 +75,7 @@ public class PersonServiceImpl implements PersonService, CommandLineRunner {
     @Override
     public PersonDto[] findPersonsByCity(String city) {
         return personRepository.findByAddressCityIgnoreCase(city)
-                .map((person -> {
-                    if (person instanceof Child) {
-                        return modelMapper.map(person, ChildDto.class);
-                    }
-                    if (person instanceof Employee) {
-                        return modelMapper.map(person, EmployeeDto.class);
-                    }
-                    return modelMapper.map(person, PersonDto.class);
-                }))
+                .map(mapper::mapToDto)
                 .toArray(PersonDto[]::new);
     }
 
@@ -131,15 +85,7 @@ public class PersonServiceImpl implements PersonService, CommandLineRunner {
         LocalDate minDate = LocalDate.now().minusYears(maxAge+1).plusDays(1);
         LocalDate maxDate = LocalDate.now().minusYears(minAge).plusDays(1);
         return personRepository.findByBirthDateBetween(minDate, maxDate)
-                .map((person -> {
-                    if (person instanceof Child) {
-                        return modelMapper.map(person, ChildDto.class);
-                    }
-                    if (person instanceof Employee) {
-                        return modelMapper.map(person, EmployeeDto.class);
-                    }
-                    return modelMapper.map(person, PersonDto.class);
-                }))
+                .map(mapper::mapToDto)
                 .toArray(PersonDto[]::new);
     }
 
@@ -152,7 +98,7 @@ public class PersonServiceImpl implements PersonService, CommandLineRunner {
     @Override
     public ChildDto[] findAllChildren() {
         return personRepository.findAllChildren()
-                .map(person -> modelMapper.map(person, ChildDto.class))
+                .map(mapper::mapToDto)
                 .toArray(ChildDto[]::new);
     }
 
@@ -160,7 +106,7 @@ public class PersonServiceImpl implements PersonService, CommandLineRunner {
     @Override
     public EmployeeDto[] findAllEmployeesBySalary(Integer minSalary, Integer maxSalary) {
         return personRepository.findEmployeesBySalary(minSalary, maxSalary)
-                .map(person -> modelMapper.map(person, EmployeeDto.class))
+                .map(mapper::mapToDto)
                 .toArray(EmployeeDto[]::new);
     }
 
