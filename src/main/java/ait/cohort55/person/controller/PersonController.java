@@ -1,6 +1,7 @@
 package ait.cohort55.person.controller;
 
 import ait.cohort55.person.dto.AddressDto;
+import ait.cohort55.person.dto.ChildDto;
 import ait.cohort55.person.dto.CityPopulationDto;
 import ait.cohort55.person.dto.PersonDto;
 import ait.cohort55.person.service.PersonService;
@@ -69,5 +70,17 @@ public class PersonController  {
     @GetMapping("/population/city")
     public Iterable<CityPopulationDto> getCitiesPopulation() {
         return personService.getCitiesPopulation();
+    }
+
+    @GetMapping("/children")
+    public ChildDto[] findChildren() {
+        return personService.findAllChildren();
+    }
+
+    @GetMapping("/salary/{minSalary}/{maxSalary}")
+    public PersonDto[] findBySalary(
+        @PathVariable Integer minSalary,
+        @PathVariable Integer maxSalary) {
+            return personService.findAllEmployeesBySalary(minSalary, maxSalary);
     }
 }

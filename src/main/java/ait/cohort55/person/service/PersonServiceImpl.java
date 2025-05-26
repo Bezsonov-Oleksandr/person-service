@@ -148,6 +148,23 @@ public class PersonServiceImpl implements PersonService, CommandLineRunner {
         return personRepository.getCitiesPopulation();
     }
 
+    @Transactional(readOnly = true)
+    @Override
+    public ChildDto[] findAllChildren() {
+        return personRepository.findAllChildren()
+                .map(person -> modelMapper.map(person, ChildDto.class))
+                .toArray(ChildDto[]::new);
+    }
+
+    @Transactional(readOnly = true)
+    @Override
+    public EmployeeDto[] findAllEmployeesBySalary(Integer minSalary, Integer maxSalary) {
+        return personRepository.findEmployeesBySalary(minSalary, maxSalary)
+                .map(person -> modelMapper.map(person, EmployeeDto.class))
+                .toArray(EmployeeDto[]::new);
+    }
+
+
     @Override
     public void run(String... args) throws Exception {
         if (personRepository.count() == 0) {
@@ -166,6 +183,5 @@ public class PersonServiceImpl implements PersonService, CommandLineRunner {
             personRepository.save(child);
             personRepository.save(employee);
         }
-
     }
 }
