@@ -1,9 +1,6 @@
 package ait.cohort55.person.model;
 
-import jakarta.persistence.Embedded;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.*;
 
 import java.io.Serializable;
@@ -15,6 +12,7 @@ import java.time.LocalDate;
 @EqualsAndHashCode(of = "id")
 @Entity
 @Table(name = "person")
+@Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 public class Person implements Serializable {
     @Id
     private int id;

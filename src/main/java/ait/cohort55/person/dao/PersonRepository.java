@@ -11,10 +11,8 @@ import java.util.stream.Stream;
 
 public interface PersonRepository extends JpaRepository<Person, Integer> {
 
-//    @Query("SELECT p FROM Person p WHERE p.name = ?1")
     Stream<Person> findByNameIgnoreCase(String name);
 
-//    @Query("SELECT a FROM Person a WHERE a.address.city = :city")
     Stream<Person> findByAddressCityIgnoreCase(String city);
 
     Stream<Person> findByBirthDateBetween(LocalDate minDate, LocalDate maxDate);

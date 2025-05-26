@@ -1,16 +1,16 @@
 package ait.cohort55.person.service;
 
 import ait.cohort55.person.dao.PersonRepository;
-import ait.cohort55.person.dto.AddressDto;
-import ait.cohort55.person.dto.CityPopulationDto;
-import ait.cohort55.person.dto.PersonDto;
+import ait.cohort55.person.dto.*;
 import ait.cohort55.person.dto.exception.ConflictException;
 import ait.cohort55.person.dto.exception.NotFoundException;
 import ait.cohort55.person.model.Address;
+import ait.cohort55.person.model.Child;
+import ait.cohort55.person.model.Employee;
 import ait.cohort55.person.model.Person;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
-import org.springframework.cglib.core.Local;
+import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,9 +20,10 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 
-public class PersonServiceImpl implements PersonService {
+public class PersonServiceImpl implements PersonService, CommandLineRunner {
     private final PersonRepository personRepository;
     private final ModelMapper modelMapper;
+    private final PersonModelDtoMapper mapper;
 
     @Transactional
     @Override
@@ -30,12 +31,24 @@ public class PersonServiceImpl implements PersonService {
         if (personRepository.existsById(personDto.getId())) {
             throw new ConflictException("Person with id " + personDto.getId() + " already exists");
         }
+        if (personDto instanceof ChildDto) {
+            personRepository.save(modelMapper.map(personDto, Child.class));
+        }
+        if (personDto instanceof EmployeeDto) {
+            personRepository.save(modelMapper.map(personDto, Employee.class));
+        }
         personRepository.save(modelMapper.map(personDto, Person.class));
     }
 
     @Override
     public PersonDto getPersonById(Integer id) {
         Person person = personRepository.findById(id).orElseThrow(NotFoundException::new);
+        if (person instanceof Child) {
+            return modelMapper.map(person, ChildDto.class);
+        }
+        if (person instanceof Employee) {
+            return modelMapper.map(person, EmployeeDto.class);
+        }
         return modelMapper.map(person, PersonDto.class);
     }
 
@@ -52,7 +65,6 @@ public class PersonServiceImpl implements PersonService {
     public PersonDto updatePersonName(Integer id, String name) {
         Person person = personRepository.findById(id).orElseThrow(NotFoundException::new);
         person.setName(name);
-//        personRepository.save(person);
         return modelMapper.map(person, PersonDto.class);
     }
 
@@ -61,7 +73,6 @@ public class PersonServiceImpl implements PersonService {
     public PersonDto updatePersonAddress(Integer id, AddressDto addressDto) {
         Person person = personRepository.findById(id).orElseThrow(NotFoundException::new);
         person.setAddress(modelMapper.map(addressDto, Address.class));
-//        personRepository.save(person);
         return modelMapper.map(person, PersonDto.class);
     }
 
@@ -94,5 +105,26 @@ public class PersonServiceImpl implements PersonService {
     @Override
     public Iterable<CityPopulationDto> getCitiesPopulation() {
         return personRepository.getCitiesPopulation();
+    }
+
+    @Override
+    public void run(String... args) throws Exception {
+        if (personRepository.count() == 0) {
+            Person person = new Person(1000,"John",
+                    LocalDate.of(1985,3,11),
+                    new Address("Sumy","Simferop",15));
+            Child child = new Child(1001, "Peter",
+                    LocalDate.of(2019,7,5),
+                    new Address("Sumy", "Hauptstr", 10),
+                    "Kita");
+            Employee employee = new Employee(1002, "Mary",
+                    LocalDate.of(1995, 11, 25),
+                    new Address("Sumy", "Hauptstr", 10),
+                    "Coogle", 8000);
+            personRepository.save(person);
+            personRepository.save(child);
+            personRepository.save(employee);
+        }
+
     }
 }
